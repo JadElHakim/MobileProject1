@@ -2,10 +2,14 @@ package com.example.project1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class CalculationPage extends AppCompatActivity {
 
@@ -74,6 +78,41 @@ public class CalculationPage extends AppCompatActivity {
 
 
     }
+    public void InsertData(final String currency, final double amount){
+
+        class BackendExecution extends AsyncTask<String, Void, String> {
+            @Override
+            protected String doInBackground(String... params) {
+
+                String currencyHolder = currency ;
+                double AmountHolder = amount ;
+                URL url;
+                HttpURLConnection http;
+
+                try{
+                    url = new URL(params[0]);
+                    http = (HttpURLConnection) url.openConnection();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    return null;
+                }
+               return "data posted";
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+
+                super.onPostExecute(result);
+
+                Toast.makeText(CalculationPage.this, "Conversion Complete", Toast.LENGTH_LONG).show();
+
+            }
+        }
+    }
 
 }
+
 
