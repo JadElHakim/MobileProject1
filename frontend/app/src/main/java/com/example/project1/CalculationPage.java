@@ -2,24 +2,78 @@ package com.example.project1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class CalculationPage extends AppCompatActivity {
 
+    String current_rate_string;
     EditText usd_val,lbp_val;
-    double usd_to_convert,lbp_to_convert;
+    double usd_to_convert,lbp_to_convert,current_rate;
+    String url="http://192.168.0.105/lau/test.php";
+    DownloadTask task;
+
+    public class DownloadTask extends AsyncTask<String, Void, String>{
+
+        protected String doInBackground(String... urls) {
+            String result = "";
+            URL url;
+            HttpURLConnection http;
+
+            try{
+                url = new URL(urls[0]);
+                http = (HttpURLConnection) url.openConnection();
+
+                InputStream in = http.getInputStream();
+                InputStreamReader reader = new InputStreamReader(in);
+                int data = reader.read();
+
+                while( data != -1){
+                    char current = (char) data;
+                    result += current;
+                    data = reader.read();
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+                return null;
+            }
+
+            return result;
+        }
+        protected void onPostExecute(String s){
+            current_rate_string=s;
+            current_rate = Double.parseDouble(current_rate_string.replace(",",""));
+            Log.i("result",""+current_rate);
+        }
+
+    }
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculation_page);
+        task=new DownloadTask();
+        task.execute(url);
+
 
         usd_val=findViewById(R.id.usd_val);
         lbp_val=findViewById(R.id.lbp_val);
+
+
 
     }
 
@@ -28,8 +82,6 @@ public class CalculationPage extends AppCompatActivity {
         try {
             //getting the value stored inside the usd_val
             usd_to_convert = Double.parseDouble(usd_val.getText().toString());
-
-
         }
         catch(Exception e){
 
@@ -50,17 +102,21 @@ public class CalculationPage extends AppCompatActivity {
         else
             //converting from lbp to usd
         if(usd_to_convert==0.0&&lbp_to_convert!=0.0) {
-
+            usd_val.setText(Double.toString( usd_to_convert / current_rate));
+            lbp_to_convert = 0;
         }
         else
             //converting from usd to lbp
         if(usd_to_convert!=0.0&&lbp_to_convert==0.0){
-
+            lbp_val.setText(Double.toString( lbp_to_convert* current_rate));
+            usd_to_convert = 0;
         }
             //value has been converted reset to place a value in one of the two options
         if(usd_to_convert!=0.0&&lbp_to_convert!=0.0){
             Toast toast=Toast.makeText(getApplicationContext(),"Please Press Erase",Toast.LENGTH_LONG);
             toast.show();
+            usd_to_convert = 0;
+            lbp_to_convert=0;
         }
 
 
