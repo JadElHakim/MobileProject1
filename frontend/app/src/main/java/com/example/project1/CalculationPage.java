@@ -102,13 +102,13 @@ public class CalculationPage extends AppCompatActivity {
         else
             //converting from lbp to usd
         if(usd_to_convert==0.0&&lbp_to_convert!=0.0) {
-            usd_val.setText(Double.toString( usd_to_convert / current_rate));
+            usd_val.setText(Double.toString( lbp_to_convert / (int)current_rate));
             lbp_to_convert = 0;
         }
         else
             //converting from usd to lbp
         if(usd_to_convert!=0.0&&lbp_to_convert==0.0){
-            lbp_val.setText(Double.toString( lbp_to_convert* current_rate));
+            lbp_val.setText(Double.toString( usd_to_convert* (int)current_rate));
             usd_to_convert = 0;
         }
             //value has been converted reset to place a value in one of the two options
