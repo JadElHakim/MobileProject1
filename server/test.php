@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Beirut');
 //storing variables this way because api requires to remove leading 0s and is of this format
 $year = date("Y");  
 $month=date("m");
-$day=date("d");
+$day=date("d"); 
 $hour=date("H");
 
 //link fetch json object from 
@@ -25,7 +25,7 @@ if($e=curl_error($ch)){
     $decoded=json_decode($response,true);
 }
         $latest_value=end($decoded["omt"]);
-        echo $latest_value[1];
+        echo json_encode($latest_value[1]);
 
 
 curl_close($ch);
