@@ -17,6 +17,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+
 
 public class CalculationPage extends AppCompatActivity {
 
@@ -78,10 +88,14 @@ public class CalculationPage extends AppCompatActivity {
     }
 
     public void onCalculate(View view){
+        BackendExecution be = new BackendExecution();
 
         try {
             //getting the value stored inside the usd_val
             usd_to_convert = Double.parseDouble(usd_val.getText().toString());
+
+            be.execute(String.valueOf(usd_to_convert),"USD");
+
         }
         catch(Exception e){
 
@@ -131,5 +145,58 @@ public class CalculationPage extends AppCompatActivity {
 
     }
 
-}
+        class BackendExecution extends AsyncTask<String, Void, String> {
+            @Override
+            protected String doInBackground(String... params) {
+
+                String currencyHolder = params[0] ;
+                String AmountHolder = params[1] ;
+                String login_url = "http://localhost/send_data.php";
+                URL url;
+                HttpURLConnection http;
+
+                try{
+                    url = new URL(login_url);
+                    http = (HttpURLConnection) url.openConnection();
+                    http.setRequestMethod("POST");
+                    http.setDoInput(true);
+                    http.setDoOutput(true);
+                    OutputStream ot = http.getOutputStream();
+                    BufferedWriter bf = new BufferedWriter(new OutputStreamWriter(ot, "UTF-8"));
+                    String data = URLEncoder.encode("currency", "UTF-8")+"="+URLEncoder.encode(currencyHolder, "UTF-8")+
+                            "&"+URLEncoder.encode("amount", "UTF-8")+"="+URLEncoder.encode(AmountHolder,"UTF-8");
+                    bf.write(data);
+                    bf.flush();
+                    bf.close();
+                    ot.close();
+                    InputStream is = http.getInputStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is,"iso-8859-1"));
+                    String result= "";
+                    String line = "";
+                    while((line = br.readLine()) != null) {
+                        result += line;
+                    }
+                    br.close();
+                    is.close();
+                    http.disconnect();
+                    return result;
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+
+                super.onPostExecute(result);
+
+                Toast.makeText(CalculationPage.this, "Conversion Complete", Toast.LENGTH_LONG).show();
+
+            }
+        }
+    }
+
+
 

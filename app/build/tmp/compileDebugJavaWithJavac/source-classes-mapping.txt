@@ -1,0 +1,6 @@
+com/example/project1/CalculationPage.java
+ com.example.project1.CalculationPage
+com/example/project1/MainActivity.java
+ com.example.project1.MainActivity
+com/example/project1/BuildConfig.java
+ com.example.project1.BuildConfig
