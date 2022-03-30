@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -30,11 +31,13 @@ import java.net.URLEncoder;
 
 public class CalculationPage extends AppCompatActivity {
 
-    String current_rate_string;
+    String current_rate_string,res;
     EditText usd_val,lbp_val;
     double usd_to_convert,lbp_to_convert,current_rate;
-    String url="http://192.168.0.105/lau/test.php";
+    String url="http://192.168.1.105:8080/project1/test.php";
+    String login_url = "http://192.168.1.105:8080/project1/post_data.php";
     DownloadTask task;
+    BackendExecution be;
 
     public class DownloadTask extends AsyncTask<String, Void, String>{
 
@@ -80,6 +83,7 @@ public class CalculationPage extends AppCompatActivity {
         task.execute(url);
 
 
+
         usd_val=findViewById(R.id.usd_val);
         lbp_val=findViewById(R.id.lbp_val);
 
@@ -88,12 +92,9 @@ public class CalculationPage extends AppCompatActivity {
     }
 
     public void onCalculate(View view){
-        BackendExecution be = new BackendExecution();
-
         try {
             //getting the value stored inside the usd_val
             usd_to_convert = Double.parseDouble(usd_val.getText().toString());
-
             be.execute(String.valueOf(usd_to_convert),"USD");
 
         }
@@ -107,7 +108,6 @@ public class CalculationPage extends AppCompatActivity {
         catch(Exception e){
 
         }
-
         //no values were added show toast and continue
         if ((usd_to_convert==0.0) && (lbp_to_convert==0.0)) {
             Toast toast=Toast.makeText(getApplicationContext(),"Enter A Value",Toast.LENGTH_LONG);
@@ -122,8 +122,11 @@ public class CalculationPage extends AppCompatActivity {
         else
             //converting from usd to lbp
         if(usd_to_convert!=0.0&&lbp_to_convert==0.0){
+            be = new BackendExecution();
+            be.execute("USD",Double.toString(usd_to_convert));
             lbp_val.setText(Double.toString( usd_to_convert* (int)current_rate));
             usd_to_convert = 0;
+
         }
             //value has been converted reset to place a value in one of the two options
         if(usd_to_convert!=0.0&&lbp_to_convert!=0.0){
@@ -148,53 +151,50 @@ public class CalculationPage extends AppCompatActivity {
         class BackendExecution extends AsyncTask<String, Void, String> {
             @Override
             protected String doInBackground(String... params) {
-
+                Log.d("here","i am here");
                 String currencyHolder = params[0] ;
                 String AmountHolder = params[1] ;
-                String login_url = "http://localhost/send_data.php";
+                String rate = current_rate_string;
                 URL url;
                 HttpURLConnection http;
+                String result= "";
 
-                try{
-                    url = new URL(login_url);
-                    http = (HttpURLConnection) url.openConnection();
-                    http.setRequestMethod("POST");
-                    http.setDoInput(true);
-                    http.setDoOutput(true);
-                    OutputStream ot = http.getOutputStream();
-                    BufferedWriter bf = new BufferedWriter(new OutputStreamWriter(ot, "UTF-8"));
-                    String data = URLEncoder.encode("currency", "UTF-8")+"="+URLEncoder.encode(currencyHolder, "UTF-8")+
-                            "&"+URLEncoder.encode("amount", "UTF-8")+"="+URLEncoder.encode(AmountHolder,"UTF-8");
-                    bf.write(data);
-                    bf.flush();
-                    bf.close();
-                    ot.close();
-                    InputStream is = http.getInputStream();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(is,"iso-8859-1"));
-                    String result= "";
-                    String line = "";
-                    while((line = br.readLine()) != null) {
-                        result += line;
+                    try{
+
+                        url = new URL(login_url);
+                        http = (HttpURLConnection) url.openConnection();
+                        http.setRequestMethod("POST");
+                        http.setDoOutput(true);
+                        http.setDoInput(true);
+                        http.setChunkedStreamingMode(0);
+                        OutputStream outputStream = http.getOutputStream();
+                        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
+                        BufferedWriter writer = new BufferedWriter(outputStreamWriter);
+
+                       writer.write("amount="+AmountHolder+"&"+"currency="+currencyHolder+"&"+"rate="+rate);
+                       // writer.write("amount=2000&currency=USD");
+                        writer.flush();
+                        InputStream in = http.getInputStream();
+                        InputStreamReader reader = new InputStreamReader(in);
+                        int data = reader.read();
+
+                        while( data != -1){
+                            char current = (char) data;
+                            result += current;
+                            data = reader.read();
+                        }
+                        return result;
+                    }catch(Exception e){
+                        e.printStackTrace();
+                        return null;
                     }
-                    br.close();
-                    is.close();
-                    http.disconnect();
-                    return result;
+
                 }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
+                protected void onPostExecute(String s){
+                    res=s;
+                    Log.d("result",""+res);
+                    Toast. makeText(getApplicationContext(),res,Toast. LENGTH_SHORT).show();
                 }
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-
-                super.onPostExecute(result);
-
-                Toast.makeText(CalculationPage.this, "Conversion Complete", Toast.LENGTH_LONG).show();
-
-            }
         }
     }
 
