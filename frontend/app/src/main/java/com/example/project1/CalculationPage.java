@@ -116,7 +116,9 @@ public class CalculationPage extends AppCompatActivity {
         else
             //converting from lbp to usd
         if(usd_to_convert==0.0&&lbp_to_convert!=0.0) {
-            usd_val.setText(Double.toString( lbp_to_convert / (int)current_rate));
+            be = new BackendExecution();
+            be.execute("LBP",Double.toString(lbp_to_convert));
+            usd_val.setText(res);
             lbp_to_convert = 0;
         }
         else
@@ -124,7 +126,7 @@ public class CalculationPage extends AppCompatActivity {
         if(usd_to_convert!=0.0&&lbp_to_convert==0.0){
             be = new BackendExecution();
             be.execute("USD",Double.toString(usd_to_convert));
-            lbp_val.setText(Double.toString( usd_to_convert* (int)current_rate));
+            lbp_val.setText(res);
             usd_to_convert = 0;
 
         }
@@ -192,6 +194,12 @@ public class CalculationPage extends AppCompatActivity {
                 }
                 protected void onPostExecute(String s){
                     res=s;
+                    if(usd_to_convert!=0.0&&lbp_to_convert==0.0){
+                        lbp_val.setText(res);
+                    }
+                    if(usd_to_convert==0.0&&lbp_to_convert!=0.0){
+                        usd_val.setText(res);
+                    }
                     Log.d("result",""+res);
                     Toast. makeText(getApplicationContext(),res,Toast. LENGTH_SHORT).show();
                 }
