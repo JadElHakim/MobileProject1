@@ -15,8 +15,15 @@ $DatabaseName = "currency_converter";
  $rate = $_POST['rate'];
  $sttmnt= $con->prepare("INSERT INTO `amountconverted`(currency,amount) VALUES (?,?)");
  $sttmnt->bind_param("ss",$currency,$amount);
- if($sttmnt->execute()==TRUE){
- $total = $amount * $rate;
+ if($sttmnt->execute()==TRUE)
+ {
+    if($currency == "USD"){
+        $total = $amount * $rate;
+    } 
+    if($currency == "LBP"){
+        $total = $amount / $rate;
+    }
+
 echo json_encode($total);
 }
 else{
