@@ -1,14 +1,16 @@
 <?php
-//Define your host here.
-$HostName = "localhost";
 
-//Define your database username here.
-$HostUser = "root";
+$db_host="localhost";
+$db_user="root";
+$db_pass= "123";
+$db_name="currency_converter";
 
-//Define your database password here.
-$HostPass = "";
+$mysqli = new mysqli($db_host,$db_user,$db_pass,$db_name);
 
-//Define your database name here.
-$DatabaseName = "currency_converter";
+if(mysqli_connect_errno()){
+    die("Connection Failed" .$mysqli->connect_error);
+}
+
+
 
 ?>
