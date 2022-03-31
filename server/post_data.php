@@ -1,5 +1,5 @@
 <?php
-include("DataBAseConfig.php");
+include("DataBaseConfig.php");
 $amount = $_POST['amount'];
 $currency = $_POST['currency'];
 $rate=$_POST['rate'];
