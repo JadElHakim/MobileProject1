@@ -153,7 +153,7 @@ public class CalculationPage extends AppCompatActivity {
 
 
                 if (currency != 0) {
-
+            Log.i("ok ok","i did make it here");
                     StringRequest request = new StringRequest(Request.Method.POST, post_url, new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
@@ -170,6 +170,7 @@ public class CalculationPage extends AppCompatActivity {
                         protected Map<String, String> getParams() throws AuthFailureError {
                             Map<String, String> parameters = new HashMap<String, String>();
                             if (currency == 1) {
+                                Log.i("hey","LBP");
                                 parameters.put("currency", "LBP");
                                 parameters.put("amount", lbp_val.getText().toString());
                                 parameters.put("rate", current_rate_string);
@@ -177,11 +178,13 @@ public class CalculationPage extends AppCompatActivity {
                                 parameters.put("currency", "USD");
                                 parameters.put("amount", usd_val.getText().toString());
                                 parameters.put("rate", current_rate_string);
+                                Log.i("Hello","USD");
                             }
                             return parameters;
                         }
                     };
-
+                    //SIX HOURS OF DEBBUGGING BECAUSE MY DUMBAAAAAAAAAAAAAAAAAAAAAAAAAAAAA I HOPE THIS WORKS
+                    requestQueue.add(request);
                 }
             }
         });
