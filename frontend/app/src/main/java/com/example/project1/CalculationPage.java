@@ -1,3 +1,11 @@
+//-----------------------------------------------------------------------------------------------------------------------//
+//Authors: Abou Chedid Alexander, El Hakim Jad
+//Project Description: currency converter from USD-->LBP or LBP-->USD using live rates fetched from an api
+//Instructions: instructions on how to run the code can be found either commented or inside the ReadMe file of the Project
+//Project Link https://github.com/JadElHakim/MobileProject1
+//Code referenced: https://stackoverflow.com/questions/2323617/android-httppost-how-to-get-the-result
+//snippet used by Ali Khaki, Android Application Developer.
+//-------------------------------------------------------------------------------------------------------------------//
 package com.example.project1;
 
 import androidx.annotation.Nullable;
@@ -11,50 +19,155 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
-
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.ArrayList;
+import java.util.List;
 
 public class CalculationPage extends AppCompatActivity {
+//------------------------------------------------------------------------//
+//----------------------initializing variables---------------------------//
 
-    String current_rate_string, res;
+    //string value for rate that will be fetched
+    String current_rate_string;
+    //storing inputs of the 2 EditTexts
     EditText usd_val, lbp_val;
+    //values to be stored as doubles then sent to the post api for calculation
     double usd_to_convert, lbp_to_convert, current_rate;
-    String url = "http://192.168.1.117/project1/test.php";
-    String post_url = "http://192.168.1.117/project1/post_data.php";
+    //url for fetching the current rate
+    String url = "http://192.168.0.105/project1/test.php";
+    //url for posting conversion result
+    String post_url = "http://192.168.0.105/project1/post_data.php";
+    //fetching rate
     DownloadTask task;
+    //posting conversion
     RequestQueue requestQueue;
+    //convert button
     Button calculate_button;
+    //the currency is initially set to 0
+    //--> 1 indicates its a LBP conversion
+    //--> 2 indicates its a USD conversion
     int currency = 0;
+//----------------------------------------------------------------------//
+
+    private void sendPostRequest() {
+
+        class SendPostReqAsyncTask extends AsyncTask<String, Void, String> {
+
+            @Override
+            protected String doInBackground(String... params) {
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost(post_url);
+                //instantialize BasicNamePairs to null
+                //-->they will be assigned depending on the currency to be converted
+                //basic name pair maps the strings to a key
+                BasicNameValuePair currency_pair = null;
+                BasicNameValuePair amount_pair = null;
+                BasicNameValuePair rate_pair = null;
+                if (currency == 1) {
+                    //conversion to LBP
+                    currency_pair = new BasicNameValuePair("currency", "LBP");
+                    amount_pair = new BasicNameValuePair("amount", lbp_val.getText().toString());
+                    rate_pair = new BasicNameValuePair("rate", current_rate_string);
+                } else if (currency == 2) {
+                    //conversion to USD
+                    currency_pair = new BasicNameValuePair("currency", "USD");
+                    amount_pair = new BasicNameValuePair("amount", usd_val.getText().toString());
+                    rate_pair = new BasicNameValuePair("rate", current_rate_string);
+                }
+                //adding the content that we want to pass with the POST request to as name-value pairs
+                List<NameValuePair> nameValuePairList = new ArrayList<NameValuePair>();
+                nameValuePairList.add(currency_pair);
+                nameValuePairList.add(amount_pair);
+                nameValuePairList.add(rate_pair);
+
+                try {
+                    UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuePairList);
+                    httpPost.setEntity(urlEncodedFormEntity);
+
+                    try {
+                        HttpResponse httpResponse = httpClient.execute(httpPost);
+
+                        InputStream inputStream = httpResponse.getEntity().getContent();
+
+                        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+
+                        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                        StringBuilder stringBuilder = new StringBuilder();
+
+                        String bufferedStrChunk = null;
+
+                        while ((bufferedStrChunk = bufferedReader.readLine()) != null) {
+
+                            stringBuilder.append(bufferedStrChunk);
+
+                        }
+                        return stringBuilder.toString();
+
+                    } catch (ClientProtocolException cpe) {
+
+                    } catch (IOException ioe) {
+                    }
+
+                } catch (Exception e) {
+
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                //initialize jsonObject to null
+                //-->set depending on currency to be converted
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(result);
+                } catch (Exception e) {
+                    Log.i("error", e.toString());
+                }
+                String fetched_value = null;
+                try {
+                    fetched_value = jsonObject.getString("result");
+                } catch (Exception e) {
+                }
+                if (currency == 1) {
+                    //converting to lbp
+                    Log.i("to lbp", fetched_value + " " + currency);
+                    usd_to_convert = Double.parseDouble(fetched_value);
+                    usd_val.setText("" + usd_to_convert);
+
+                } else if (currency == 2) {
+                    //converting to usd
+                    Log.i("to usd", fetched_value + " " + currency);
+                    lbp_to_convert = Double.parseDouble(fetched_value);
+                    lbp_val.setText("" + lbp_to_convert);
+
+                }
+
+            }
+        }
+
+        SendPostReqAsyncTask sendPostReqAsyncTask = new SendPostReqAsyncTask();
+        sendPostReqAsyncTask.execute();
+    }
 
 
     public class DownloadTask extends AsyncTask<String, Void, String> {
@@ -103,11 +216,12 @@ public class CalculationPage extends AppCompatActivity {
         usd_val = findViewById(R.id.usd_val);
         lbp_val = findViewById(R.id.lbp_val);
         calculate_button = (Button) findViewById(R.id.calculate_button);
-        requestQueue = Volley.newRequestQueue(getApplicationContext());
 
+        //on click listener because i read online that it is better than referring to an onclick function
         calculate_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //initially currency=0 neither USD nor LBP
                 currency = 0;
                 try {
                     //getting the value stored inside the usd_val
@@ -131,13 +245,16 @@ public class CalculationPage extends AppCompatActivity {
                     //converting from lbp to usd
                     if (usd_to_convert == 0.0 && lbp_to_convert != 0.0) {
                         currency = 1;
-                        usd_val.setText("" + lbp_to_convert / current_rate);
                         lbp_to_convert = 0;
+                        usd_to_convert = 0;
+
+
                     } else
                         //converting from usd to lbp
                         if (usd_to_convert != 0.0 && lbp_to_convert == 0.0) {
                             currency = 2;
-                            lbp_val.setText("" + usd_to_convert * current_rate);
+                            //reset values
+                            lbp_to_convert = 0;
                             usd_to_convert = 0;
 
                         }
@@ -145,115 +262,24 @@ public class CalculationPage extends AppCompatActivity {
                 if (usd_to_convert != 0.0 && lbp_to_convert != 0.0) {
                     Toast toast = Toast.makeText(getApplicationContext(), "Please Press Erase", Toast.LENGTH_LONG);
                     toast.show();
-                    usd_to_convert = 0;
+                    //reset values
                     lbp_to_convert = 0;
+                    usd_to_convert = 0;
+
                     return;
 
                 }
-
-
                 if (currency != 0) {
-            Log.i("ok ok","i did make it here");
-                    StringRequest request = new StringRequest(Request.Method.POST, post_url, new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-
-                        }
-                    }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-
-                        }
-                    }) {
-
-                        @Override
-                        protected Map<String, String> getParams() throws AuthFailureError {
-                            Map<String, String> parameters = new HashMap<String, String>();
-                            if (currency == 1) {
-                                Log.i("hey","LBP");
-                                parameters.put("currency", "LBP");
-                                parameters.put("amount", lbp_val.getText().toString());
-                                parameters.put("rate", current_rate_string);
-                            } else if (currency == 2) {
-                                parameters.put("currency", "USD");
-                                parameters.put("amount", usd_val.getText().toString());
-                                parameters.put("rate", current_rate_string);
-                                Log.i("Hello","USD");
-                            }
-                            return parameters;
-                        }
-                    };
-                    //SIX HOURS OF DEBBUGGING BECAUSE MY DUMBAAAAAAAAAAAAAAAAAAAAAAAAAAAAA I HOPE THIS WORKS
-                    requestQueue.add(request);
+                    //user wants to convert
+                    sendPostRequest();
                 }
             }
         });
     }
 
     public void onErase(View v) {
-
+        //reset texts
         usd_val.setText("");
         lbp_val.setText("");
-
-
     }
-
-//        class BackendExecution extends AsyncTask<String, Void, String> {
-//            @Override
-//            protected String doInBackground(String... params) {
-//                Log.i("here","i am here");
-//                String currencyHolder = params[0] ;
-//                String AmountHolder = params[1] ;
-//                String rate = current_rate_string;
-//                URL url;
-//                HttpURLConnection http;
-//                String result= "";
-//
-//                    try{
-//
-//                        url = new URL(login_url);
-//                        http = (HttpURLConnection) url.openConnection();
-//                        http.setRequestMethod("POST");
-//                        http.setDoOutput(true);
-//                        http.setDoInput(true);
-//                        http.setChunkedStreamingMode(0);
-//                        OutputStream outputStream = http.getOutputStream();
-//                        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
-//                        BufferedWriter writer = new BufferedWriter(outputStreamWriter);
-//
-//                       writer.write("amount="+AmountHolder+"&"+"currency="+currencyHolder+"&"+"rate="+rate);
-//                       // writer.write("amount=2000&currency=USD");
-//                        writer.flush();
-//                        InputStream in = http.getInputStream();
-//                        InputStreamReader reader = new InputStreamReader(in);
-//                        int data = reader.read();
-//
-//                        while( data != -1){
-//                            char current = (char) data;
-//                            result += current;
-//                            data = reader.read();
-//                        }
-//                        return result;
-//                    }catch(Exception e){
-//                        e.printStackTrace();
-//                        return null;
-//                    }
-//
-//                }
-//                protected void onPostExecute(String s){
-//                    res=s;
-//                    if(usd_to_convert!=0.0&&lbp_to_convert==0.0){
-//                        lbp_val.setText(res);
-//                    }
-//                    if(usd_to_convert==0.0&&lbp_to_convert!=0.0){
-//                        usd_val.setText(res);
-//                    }
-//                    Log.d("result",""+res);
-//                    Toast. makeText(getApplicationContext(),res,Toast. LENGTH_SHORT).show();
-//                }
-//        }
-
 }
-
-
-
