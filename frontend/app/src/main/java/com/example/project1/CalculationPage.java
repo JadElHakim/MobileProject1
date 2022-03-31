@@ -30,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStream;
@@ -45,26 +46,25 @@ import java.util.Map;
 
 public class CalculationPage extends AppCompatActivity {
 
-    String current_rate_string,res;
-    EditText usd_val,lbp_val;
-    double usd_to_convert,lbp_to_convert,current_rate;
-    String url="http://192.168.1.117/project1/test.php";
-    String post_url = "http://192.168.1.117:8080/project1/post_data.php";
+    String current_rate_string, res;
+    EditText usd_val, lbp_val;
+    double usd_to_convert, lbp_to_convert, current_rate;
+    String url = "http://192.168.1.117/project1/test.php";
+    String post_url = "http://192.168.1.117/project1/post_data.php";
     DownloadTask task;
     RequestQueue requestQueue;
     Button calculate_button;
-    int currency=0;
+    int currency = 0;
 
 
-
-    public class DownloadTask extends AsyncTask<String, Void, String>{
+    public class DownloadTask extends AsyncTask<String, Void, String> {
 
         protected String doInBackground(String... urls) {
             String result = "";
             URL url;
             HttpURLConnection http;
 
-            try{
+            try {
                 url = new URL(urls[0]);
                 http = (HttpURLConnection) url.openConnection();
 
@@ -72,39 +72,38 @@ public class CalculationPage extends AppCompatActivity {
                 InputStreamReader reader = new InputStreamReader(in);
                 int data = reader.read();
 
-                while( data != -1){
+                while (data != -1) {
                     char current = (char) data;
                     result += current;
                     data = reader.read();
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
 
             return result;
         }
-        protected void onPostExecute(String s){
-            current_rate_string=s;
-            current_rate = Double.parseDouble(current_rate_string.replace(",",""));
-            Log.i("result",""+current_rate);
+
+        protected void onPostExecute(String s) {
+            current_rate_string = s;
+            current_rate = Double.parseDouble(current_rate_string.replace(",", ""));
+            Log.i("result", "" + current_rate);
         }
 
     }
-
-
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculation_page);
-        task=new DownloadTask();
+        task = new DownloadTask();
         task.execute(url);
-        usd_val=findViewById(R.id.usd_val);
-        lbp_val=findViewById(R.id.lbp_val);
-        calculate_button= (Button)findViewById(R.id.calculate_button);
-        requestQueue=Volley.newRequestQueue(getApplicationContext());
+        usd_val = findViewById(R.id.usd_val);
+        lbp_val = findViewById(R.id.lbp_val);
+        calculate_button = (Button) findViewById(R.id.calculate_button);
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
 
         calculate_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,47 +154,37 @@ public class CalculationPage extends AppCompatActivity {
 
                 if (currency != 0) {
 
-                StringRequest request = new StringRequest(Request.Method.POST, post_url, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
+                    StringRequest request = new StringRequest(Request.Method.POST, post_url, new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
 
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                    }
-                }) {
-
-                    @Override
-                    protected Map<String, String> getParams() throws AuthFailureError {
-                        Map<String, String> parameters = new HashMap<String, String>();
-                        if (currency == 1) {
-                            parameters.put("currency", "LBP");
-                            parameters.put("amount", lbp_val.getText().toString());
-                        } else if (currency == 2) {
-                            parameters.put("currency", "USD");
-                            parameters.put("amount", usd_val.getText().toString());
                         }
-                        return parameters;
-                    }
-                };
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
 
-            }
+                        }
+                    }) {
+
+                        @Override
+                        protected Map<String, String> getParams() throws AuthFailureError {
+                            Map<String, String> parameters = new HashMap<String, String>();
+                            if (currency == 1) {
+                                parameters.put("currency", "LBP");
+                                parameters.put("amount", lbp_val.getText().toString());
+                                parameters.put("rate", current_rate_string);
+                            } else if (currency == 2) {
+                                parameters.put("currency", "USD");
+                                parameters.put("amount", usd_val.getText().toString());
+                                parameters.put("rate", current_rate_string);
+                            }
+                            return parameters;
+                        }
+                    };
+
+                }
             }
         });
-
-
-
-
-
-
-    }
-
-    public void onCalculate(View view){
-
-
-
     }
 
     public void onErase(View v) {
@@ -261,7 +250,7 @@ public class CalculationPage extends AppCompatActivity {
 //                }
 //        }
 
-    }
+}
 
 
 
