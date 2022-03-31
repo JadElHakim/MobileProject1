@@ -18,6 +18,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
@@ -47,114 +48,116 @@ public class CalculationPage extends AppCompatActivity {
     String current_rate_string,res;
     EditText usd_val,lbp_val;
     double usd_to_convert,lbp_to_convert,current_rate;
-//    String url="http://192.168.1.117/project1/test.php";
+    String url="http://192.168.1.117/project1/test.php";
     String post_url = "http://192.168.1.117:8080/project1/post_data.php";
+    DownloadTask task;
     RequestQueue requestQueue;
     Button calculate_button;
+    int currency=0;
 
-//    DownloadTask task;
-//    BackendExecution be;
 
-//    public class DownloadTask extends AsyncTask<String, Void, String>{
-//
-//        protected String doInBackground(String... urls) {
-//            String result = "";
-//            URL url;
-//            HttpURLConnection http;
-//
-//            try{
-//                url = new URL(urls[0]);
-//                http = (HttpURLConnection) url.openConnection();
-//
-//                InputStream in = http.getInputStream();
-//                InputStreamReader reader = new InputStreamReader(in);
-//                int data = reader.read();
-//
-//                while( data != -1){
-//                    char current = (char) data;
-//                    result += current;
-//                    data = reader.read();
-//                }
-//            }catch(Exception e){
-//                e.printStackTrace();
-//                return null;
-//            }
-//
-//            return result;
-//        }
-//        protected void onPostExecute(String s){
-//            current_rate_string=s;
-//            current_rate = Double.parseDouble(current_rate_string.replace(",",""));
-//            Log.i("result",""+current_rate);
-//        }
-//
-//    }
+
+    public class DownloadTask extends AsyncTask<String, Void, String>{
+
+        protected String doInBackground(String... urls) {
+            String result = "";
+            URL url;
+            HttpURLConnection http;
+
+            try{
+                url = new URL(urls[0]);
+                http = (HttpURLConnection) url.openConnection();
+
+                InputStream in = http.getInputStream();
+                InputStreamReader reader = new InputStreamReader(in);
+                int data = reader.read();
+
+                while( data != -1){
+                    char current = (char) data;
+                    result += current;
+                    data = reader.read();
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+                return null;
+            }
+
+            return result;
+        }
+        protected void onPostExecute(String s){
+            current_rate_string=s;
+            current_rate = Double.parseDouble(current_rate_string.replace(",",""));
+            Log.i("result",""+current_rate);
+        }
+
+    }
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculation_page);
-//        task=new DownloadTask();
-//        task.execute(url);
+        task=new DownloadTask();
+        task.execute(url);
         usd_val=findViewById(R.id.usd_val);
         lbp_val=findViewById(R.id.lbp_val);
         calculate_button= (Button)findViewById(R.id.calculate_button);
         requestQueue=Volley.newRequestQueue(getApplicationContext());
 
         calculate_button.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View view) {
+                currency = 0;
                 try {
                     //getting the value stored inside the usd_val
                     usd_to_convert = Double.parseDouble(usd_val.getText().toString());
-//            be.execute(String.valueOf(usd_to_convert),"USD");
 
-                }
-                catch(Exception e){
+                } catch (Exception e) {
 
                 }
                 try {
                     //getting the value stored inside the lbp_val
                     lbp_to_convert = Double.parseDouble(lbp_val.getText().toString());
-                }
-                catch(Exception e){
+                } catch (Exception e) {
 
                 }
                 //no values were added show toast and continue
-                if ((usd_to_convert==0.0) && (lbp_to_convert==0.0)) {
-                    Toast toast=Toast.makeText(getApplicationContext(),"Enter A Value",Toast.LENGTH_LONG);
+                if ((usd_to_convert == 0.0) && (lbp_to_convert == 0.0)) {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Enter A Value", Toast.LENGTH_LONG);
                     toast.show();
-                }
-                else
+                    return;
+                } else
                     //converting from lbp to usd
-                    if(usd_to_convert==0.0&&lbp_to_convert!=0.0) {
-//            be = new BackendExecution();
-//            be.execute("LBP",Double.toString(lbp_to_convert));
-                        usd_val.setText(res);
+                    if (usd_to_convert == 0.0 && lbp_to_convert != 0.0) {
+                        currency = 1;
+                        usd_val.setText("" + lbp_to_convert / current_rate);
                         lbp_to_convert = 0;
-                    }
-                    else
+                    } else
                         //converting from usd to lbp
-                        if(usd_to_convert!=0.0&&lbp_to_convert==0.0){
-//            be = new BackendExecution();
-//            be.execute("USD",Double.toString(usd_to_convert));
-                            lbp_val.setText(res);
+                        if (usd_to_convert != 0.0 && lbp_to_convert == 0.0) {
+                            currency = 2;
+                            lbp_val.setText("" + usd_to_convert * current_rate);
                             usd_to_convert = 0;
 
                         }
                 //value has been converted reset to place a value in one of the two options
-                if(usd_to_convert!=0.0&&lbp_to_convert!=0.0){
-                    Toast toast=Toast.makeText(getApplicationContext(),"Please Press Erase",Toast.LENGTH_LONG);
+                if (usd_to_convert != 0.0 && lbp_to_convert != 0.0) {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Please Press Erase", Toast.LENGTH_LONG);
                     toast.show();
                     usd_to_convert = 0;
-                    lbp_to_convert=0;
+                    lbp_to_convert = 0;
+                    return;
+
                 }
-                
-                JsonObjectRequest jsonObjectRequest=new JsonObjectRequest(Request.Method.POST, post_url, new Response.Listener<JSONObject>() {
+
+
+                if (currency != 0) {
+
+                StringRequest request = new StringRequest(Request.Method.POST, post_url, new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
 
                     }
                 }, new Response.ErrorListener() {
@@ -162,16 +165,23 @@ public class CalculationPage extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
 
                     }
-                }){
+                }) {
 
                     @Override
                     protected Map<String, String> getParams() throws AuthFailureError {
-                        Map<String,String> parameters = new HashMap<String,String>();
-
-
-
+                        Map<String, String> parameters = new HashMap<String, String>();
+                        if (currency == 1) {
+                            parameters.put("currency", "LBP");
+                            parameters.put("amount", lbp_val.getText().toString());
+                        } else if (currency == 2) {
+                            parameters.put("currency", "USD");
+                            parameters.put("amount", usd_val.getText().toString());
+                        }
+                        return parameters;
                     }
                 };
+
+            }
             }
         });
 
