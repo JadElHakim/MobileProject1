@@ -12,14 +12,14 @@
         android:text="Lira Rate Daily"
         android:textColor="@color/purple_700"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonCalculate"
+        app:layout_constraintBottom_toTopOf="@+id/calculate_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.245" />
 
     <Button
-        android:id="@+id/buttonCalculate"
+        android:id="@+id/calculate_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="46dp"
@@ -53,7 +53,7 @@
         android:ems="10"
         android:hint="LBP"
         android:inputType="numberDecimal"
-        app:layout_constraintBottom_toTopOf="@+id/buttonCalculate"
+        app:layout_constraintBottom_toTopOf="@+id/calculate_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usd_val" />
@@ -85,7 +85,7 @@
         android:onClick="onErase"
         android:text="Erase"
         app:layout_constraintBottom_toTopOf="@+id/recyclerView"
-        app:layout_constraintEnd_toStartOf="@+id/buttonCalculate"
+        app:layout_constraintEnd_toStartOf="@+id/calculate_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lbp_val" />
 
