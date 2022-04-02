@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -30,6 +31,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,9 +53,9 @@ public class CalculationPage extends AppCompatActivity {
     //values to be stored as doubles then sent to the post api for calculation
     double usd_to_convert, lbp_to_convert, current_rate;
     //url for fetching the current rate
-    String url = "http://192.168.1.105:8080/project1/test.php";
+    String url = "http://192.168.43.80:8080/project1/test.php";
     //url for posting conversion result
-    String post_url = "http://192.168.1.105:8080/project1/post_data.php";
+    String post_url = "http://192.168.43.80:8080/project1/post_data.php";
     //fetching rate
     DownloadTask task;
     //posting conversion
@@ -63,6 +65,7 @@ public class CalculationPage extends AppCompatActivity {
     //the currency is initially set to 0
     //--> 1 indicates its a LBP conversion
     //--> 2 indicates its a USD conversion
+    TextView rateview;
     int currency = 0;
 //----------------------------------------------------------------------//
 
@@ -201,6 +204,7 @@ public class CalculationPage extends AppCompatActivity {
         protected void onPostExecute(String s) {
             current_rate_string = s;
             current_rate = Double.parseDouble(current_rate_string.replace(",", ""));
+            rateview.setText("Current Rate:\t"+current_rate_string);
             Log.i("result", "" + current_rate);
         }
 
@@ -216,6 +220,7 @@ public class CalculationPage extends AppCompatActivity {
         usd_val = findViewById(R.id.usd_val);
         lbp_val = findViewById(R.id.lbp_val);
         calculate_button = (Button) findViewById(R.id.calculate_button);
+        rateview = (TextView) findViewById(R.id.RateView);
 
         //on click listener because i read online that it is better than referring to an onclick function
         calculate_button.setOnClickListener(new View.OnClickListener() {
