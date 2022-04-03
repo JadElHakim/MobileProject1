@@ -53,9 +53,9 @@ public class CalculationPage extends AppCompatActivity {
     //values to be stored as doubles then sent to the post api for calculation
     double usd_to_convert, lbp_to_convert, current_rate;
     //url for fetching the current rate
-    String url = "http://192.168.43.80:8080/project1/test.php";
+    String url = "http://192.168.1.117/project1/test.php";
     //url for posting conversion result
-    String post_url = "http://192.168.43.80:8080/project1/post_data.php";
+    String post_url = "http://192.168.1.117/project1/post_data.php";
     //fetching rate
     DownloadTask task;
     //posting conversion

@@ -36,7 +36,7 @@ else if (strcmp($currency, "LBP") == 0) {
 }
 
 //insert values to Database
-$query= $mysqli->prepare("INSERT INTO amountconverted(currency,amount,rate,return_amount) VALUES (?,?,?,?)");
+$query= $mysqli->prepare("INSERT INTO conversions(currency,amount,rate,return_amount) VALUES (?,?,?,?)");
 $query->bind_param("ssss", $amount, $currency, $rate,$return_amount);
 $query->execute();
 

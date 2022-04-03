@@ -6,7 +6,7 @@ $db_user="root";
 //database password
 $db_pass= "123";
 //database name
-$db_name="currency_converter";
+$db_name="currencydb";
 //connect to databse
 $mysqli = new mysqli($db_host,$db_user,$db_pass,$db_name);
 //if error die ( thats what they all say :( )
