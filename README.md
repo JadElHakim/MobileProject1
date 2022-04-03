@@ -8,7 +8,7 @@ The aim of this project is to convert currency from USD to LBP or vise versa usi
 ## Environment Variables
 
 To run this project, you will need to add the folders found inside the server folder into htDocs which could be generally found inside the xampp's folder location 
-after adding the files and creating the database: "currencydb" as well as the table: "conversions" and the four rows: "amount, currency rate, and return_amount" set the ip inside of the java file then start Apache and MySQL
+after adding the files and creating the database: "currencydb" as well as the table: "conversions" and the four rows: "amount, currency, rate, and return_amount" set the ip inside of the java file then start Apache and MySQL
 
 
 ## Project Demo
